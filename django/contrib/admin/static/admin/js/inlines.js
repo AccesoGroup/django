@@ -52,7 +52,8 @@
 				$(this).filter(":last").after('<div class="' + options.addCssClass + '"><a href="javascript:void(0)">' + options.addText + "</a></div>");
 				addButton = $(this).filter(":last").next().find("a");
 			}
-			addButton.click(function() {
+			addButton.click(function(e) {
+				e.preventDefault();
 				var totalForms = $("#id_" + options.prefix + "-TOTAL_FORMS");
 				var template = $("#" + options.prefix + "-empty");
 				var row = template.clone(true);
@@ -85,7 +86,8 @@
 					addButton.parent().hide();
 				}
 				// The delete button of each row triggers a bunch of other things
-				row.find("a." + options.deleteCssClass).click(function() {
+				row.find("a." + options.deleteCssClass).click(function(e1) {
+					e1.preventDefault();
 					// Remove the parent form containing this button:
 					var row = $(this).parents("." + options.formCssClass);
 					row.remove();
@@ -94,6 +96,9 @@
 					if (options.removed) {
 						options.removed(row);
 					}
+
+					$(document).trigger('formset:removed', [row, options.prefix]);
+
 					// Update the TOTAL_FORMS form count.
 					var forms = $("." + options.formCssClass);
 					$("#id_" + options.prefix + "-TOTAL_FORMS").val(forms.length);
@@ -110,13 +115,13 @@
 							updateElementIndex(this, options.prefix, i);
 						});
 					}
-					return false;
 				});
 				// If a post-add callback was supplied, call it with the added form:
 				if (options.added) {
 					options.added(row);
 				}
-				return false;
+
+				$(document).trigger('formset:added', [row, options.prefix]);
 			});
 		}
 		return this;
